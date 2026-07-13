@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth bg-black">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stream Coin ($STREAM) | The Attention Economy</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: '#ccff00', // Neon green from reference
+                        dark: '#050505',
+                        surface: '#111111',
+                        borderline: '#222222',
+                    },
+                    animation: {
+                        'marquee': 'marquee 20s linear infinite',
+                        'spin-slow': 'spin 12s linear infinite',
+                    },
+                    keyframes: {
+                        marquee: {
+                            '0%': { transform: 'translateX(0%)' },
+                            '100%': { transform: 'translateX(-100%)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #050505;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* Typography Utilities */
+        .text-outline-brand {
+            -webkit-text-stroke: 1px #ccff00;
+            color: transparent;
+        }
+        
+        .text-outline-white {
+            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.8);
+            color: transparent;
+            paint-order: stroke fill; /* Fixes overlapping stroke on tight letter spacing */
+        }
+
+        /* Section Overline Label */
+        .section-label {
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #888;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .section-label::before {
+            content: '//';
+            color: #ccff00;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #050505;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #222;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ccff00;
+        }
+
+        /* FAQ Accordion */
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+            opacity: 0;
+        }
+        .faq-item.active .faq-answer {
+            max-height: 200px;
+            opacity: 1;
+        }
+        .faq-item.active .faq-icon {
+            transform: rotate(45deg);
+            color: #ccff00;
+        }
+
+        /* Custom Toast Notification */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #ccff00;
+            color: #000;
+            text-align: center;
+            border-radius: 4px;
+            padding: 16px;
+            position: fixed;
+            z-index: 100;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-weight: bold;
+            font-family: 'Space Grotesk', sans-serif;
+            opacity: 0;
+            transition: opacity 0.3s, bottom 0.3s;
+        }
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 50px;
+        }
+
+        /* Hide scrollbar for marquee */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="antialiased selection:bg-brand selection:text-black font-sans text-gray-300">
+
+    <nav class="fixed w-full z-50 bg-dark/90 backdrop-blur-md border-b border-white/5 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex-shrink-0 flex items-center gap-2 cursor-pointer" onclick="window.scrollTo(0,0)">
+                    <img src="image_2bee1e.jpg" alt="Stream Coin" class="w-9 h-9 rounded-full shadow-[0_0_10px_rgba(204,255,0,0.3)]">
+                    <span class="font-display font-bold text-xl tracking-tight text-white">STREAM <span class="text-brand">COIN</span></span>
+                </div>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center gap-6 text-sm font-medium font-display tracking-wide uppercase">
+                    <a href="#flywheel" class="hover:text-brand transition-colors">Mechanism</a>
+                    <a href="#bounty" class="hover:text-brand transition-colors">Live Bounties</a>
+                    <a href="#tokenomics" class="hover:text-brand transition-colors">Data</a>
+                    <button class="w-8 h-8 flex items-center justify-center border border-white/20 hover:border-brand hover:text-brand transition-colors">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" class="text-gray-300 hover:text-brand focus:outline-none">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <header class="pt-32 pb-16 lg:pt-40 lg:pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-b border-borderline relative">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            
+            <!-- Left: Typography & CTA -->
+            <div>
+                <div class="section-label">LAUNCHING ON ROBINHOOD CHAIN</div>
+                
+                <h1 class="font-display font-black text-6xl sm:text-7xl lg:text-8xl leading-[0.9] tracking-tighter uppercase mb-6">
+                    <span class="text-white block">STREAM</span>
+                    <span class="text-outline-brand block">ATTENTION.</span>
+                </h1>
+                
+                <p class="text-gray-400 text-lg md:text-xl mb-8 max-w-xl font-light leading-relaxed">
+                    Built on the Robinhood Chain, $STREAM weaponizes the attention economy. A 2% tax on all trades is used to drop massive donations on top streamers, creating an endless viral loop.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto mb-10">
+                    <a href="https://x.com/StreamcoinRH" target="_blank" rel="noopener noreferrer" class="bg-white text-black font-display font-black text-sm text-center px-10 py-5 uppercase tracking-widest hover:bg-brand transition-colors w-full sm:w-auto flex items-center justify-center gap-3">
+                        FOLLOW X
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 1200 1227">
+                            <path d="M714.163 519.284L1160.89 0H1055.03L667.137 450.887L357.328 0H0L468.492 681.821L0 1226.37H105.866L515.491 750.218L842.672 1226.37H1200L714.137 519.284H714.163ZM569.165 687.828L521.697 619.934L144.011 79.6944H306.615L611.412 515.685L658.88 583.579L1055.08 1150.3H892.476L569.165 687.854V687.828Z"/>
+                        </svg>
+                    </a>
+                    <a href="#flywheel" class="border border-white/20 text-white font-display font-black text-sm text-center px-10 py-5 uppercase tracking-widest hover:border-brand hover:text-brand transition-colors w-full sm:w-auto">
+                        Learn Mechanism
+                    </a>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 text-xs font-mono text-gray-500 uppercase tracking-widest">
+                    <span>Contract Address</span>
+                    <button onclick="copyCA()" class="flex items-center gap-2 border border-white/10 bg-surface px-4 py-2 hover:border-brand transition-colors group cursor-pointer w-full sm:w-auto">
+                        <span id="ca-text" class="text-gray-300">0xSTRM...4920</span>
+                        <i class="fa-regular fa-copy group-hover:text-brand"></i>
+                    </button>
+                    <input type="hidden" id="full-ca" value="0x1234567890abcdef1234567890abcdef12345678">
+                </div>
+            </div>
+
+            <!-- Right: Data Visualization -->
+            <div class="relative flex justify-center items-center h-full min-h-[300px]">
+                <!-- Abstract Circular Data Graphic -->
+                <div class="relative w-72 h-72">
+                    <!-- Outer Dashed Ring -->
+                    <svg class="absolute inset-0 w-full h-full animate-spin-slow" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="48" fill="none" stroke="#222" stroke-width="1" stroke-dasharray="4 4" />
+                    </svg>
+                    <!-- Inner Solid Ring with Gap -->
+                    <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100" style="transform: rotate(-90deg);">
+                        <circle cx="50" cy="50" r="35" fill="none" stroke="#111" stroke-width="4" />
+                        <circle cx="50" cy="50" r="35" fill="none" stroke="#ccff00" stroke-width="4" stroke-dasharray="220" stroke-dashoffset="180" />
+                    </svg>
+                    
+                    <!-- Center Content -->
+                    <div class="absolute inset-0 flex flex-col items-center justify-center font-display">
+                        <span class="text-5xl font-black text-white">2%</span>
+                        <span class="text-[0.65rem] text-brand tracking-widest uppercase mt-1">Tax Engine</span>
+                    </div>
+
+                    <!-- Decorative elements -->
+                    <div class="absolute top-0 right-10 text-[0.6rem] text-gray-600 font-mono">X: 24.1</div>
+                    <div class="absolute bottom-0 left-10 text-[0.6rem] text-gray-600 font-mono">Y: 88.9</div>
+                    <div class="absolute top-1/2 -right-4 w-8 border-t border-brand/50"></div>
+                </div>
+            </div>
+            
+        </div>
+    </header>
+
+    <div class="w-full border-b border-borderline py-3 overflow-hidden bg-brand text-black">
+        <div class="animate-marquee whitespace-nowrap flex space-x-8 items-center font-display font-bold uppercase tracking-wider text-sm">
+            <span>+ 2% TAX TO STREAMERS</span> <i class="fa-solid fa-play text-xs"></i>
+            <span>+ THE ATTENTION FLYWHEEL</span> <i class="fa-solid fa-play text-xs"></i>
+            <span>+ ROBINHOOD CHAIN NATIVE</span> <i class="fa-solid fa-play text-xs"></i>
+            <span>+ BUY. SHILL. TIP. REPEAT.</span> <i class="fa-solid fa-play text-xs"></i>
+            <span>+ 2% TAX TO STREAMERS</span> <i class="fa-solid fa-play text-xs"></i>
+            <span>+ THE ATTENTION FLYWHEEL</span> <i class="fa-solid fa-play text-xs"></i>
+            <span>+ ROBINHOOD CHAIN NATIVE</span> <i class="fa-solid fa-play text-xs"></i>
+            <span>+ BUY. SHILL. TIP. REPEAT.</span> <i class="fa-solid fa-play text-xs"></i>
+        </div>
+    </div>
+
+    <section class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-b border-borderline">
+        <div class="section-label">01 THE PROTOCOL</div>
+        
+        <h2 class="font-display font-black text-4xl sm:text-5xl lg:text-6xl uppercase tracking-tighter mb-16 max-w-3xl">
+            Every transaction becomes a viral distribution.
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Stat 1 -->
+            <div class="border-t border-white/20 pt-6">
+                <div class="font-display font-black text-6xl text-white mb-2">2<span class="text-brand text-4xl">%</span></div>
+                <h3 class="text-sm font-bold uppercase tracking-widest text-gray-300 mb-2">Buy Tax</h3>
+                <p class="text-sm text-gray-500">Automatically swapped to stablecoins and routed to the secure Streamer Treasury Wallet.</p>
+            </div>
+            
+            <!-- Stat 2 -->
+            <div class="border-t border-white/20 pt-6">
+                <div class="font-display font-black text-6xl text-white mb-2">2<span class="text-brand text-4xl">%</span></div>
+                <h3 class="text-sm font-bold uppercase tracking-widest text-gray-300 mb-2">Sell Tax</h3>
+                <p class="text-sm text-gray-500">Matches the buy tax to ensure constant funding of the tipping protocol regardless of market direction.</p>
+            </div>
+
+            <!-- Highlight Box -->
+            <div class="bg-brand text-black p-8 flex flex-col justify-between h-full">
+                <div>
+                    <div class="font-display font-black text-4xl uppercase mb-2">REACH</div>
+                    <p class="text-sm font-medium">Fueled by the culture, built for the community. The ultimate ROI on attention.</p>
+                </div>
+                <i class="fa-solid fa-arrow-right text-2xl mt-8"></i>
+            </div>
+        </div>
+    </section>
+
+    <section id="flywheel" class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-b border-borderline">
+        <div class="section-label">02 THE FLYWHEEL</div>
+        
+        <h2 class="font-display font-black text-4xl sm:text-5xl lg:text-6xl uppercase tracking-tighter mb-8 max-w-3xl">
+            <span class="text-white block">A SIMPLE TAX.</span>
+            <span class="text-outline-white block">AN EXPLOSIVE RESULT.</span>
+        </h2>
+        
+        <p class="text-gray-400 text-lg mb-16 max-w-2xl">
+            The protocol operates entirely on the Robinhood Chain. It is a self-sustaining loop designed to convert on-chain volume into off-chain viral marketing, driving new users back on-chain.
+        </p>
+
+        <!-- Vertical Timeline Flow -->
+        <div class="relative pl-8 md:pl-0">
+            <!-- Line -->
+            <div class="absolute left-[11px] md:left-1/2 top-0 bottom-0 w-px bg-white/10 md:-translate-x-1/2"></div>
+            
+            <div class="space-y-16">
+                <!-- Step 1 -->
+                <div class="relative flex flex-col md:flex-row justify-between items-center w-full group">
+                    <div class="absolute left-[-21px] md:left-1/2 w-4 h-4 rounded-full bg-brand border-4 border-black md:-translate-x-1/2 z-10 transition-transform group-hover:scale-150 group-hover:shadow-[0_0_15px_#ccff00]"></div>
+                    <div class="md:w-[45%] w-full pl-8 md:pl-0 md:text-right">
+                        <div class="p-6 rounded-xl border border-transparent hover:bg-surface hover:border-white/10 transition-all duration-300">
+                            <div class="text-brand font-mono text-xs mb-2">PHASE 01</div>
+                            <h3 class="font-display font-bold text-2xl uppercase text-white mb-2"><i class="fa-solid fa-coins text-brand/50 mr-2 md:hidden"></i>Tax Collection <i class="fa-solid fa-coins text-brand/50 ml-2 hidden md:inline"></i></h3>
+                            <p class="text-sm text-gray-500">Every swap on decentralized exchanges generates a 2% fee, accumulating directly into the contract.</p>
+                        </div>
+                    </div>
+                    <div class="hidden md:block md:w-[45%]">
+                        <!-- Empty spacer for desktop -->
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="relative flex flex-col md:flex-row justify-between items-center w-full group">
+                    <div class="absolute left-[-21px] md:left-1/2 w-4 h-4 rounded-full bg-borderline border-4 border-black md:-translate-x-1/2 z-10 transition-transform group-hover:scale-150 group-hover:bg-brand group-hover:shadow-[0_0_15px_#ccff00]"></div>
+                    <div class="hidden md:block md:w-[45%]">
+                        <!-- Empty spacer for desktop -->
+                    </div>
+                    <div class="md:w-[45%] w-full pl-8 md:pl-0 md:text-left">
+                        <div class="p-6 rounded-xl border border-transparent hover:bg-surface hover:border-white/10 transition-all duration-300">
+                            <div class="text-gray-500 group-hover:text-brand transition-colors font-mono text-xs mb-2">PHASE 02</div>
+                            <h3 class="font-display font-bold text-2xl uppercase text-white mb-2"><i class="fa-solid fa-vault text-gray-600 group-hover:text-brand/50 transition-colors mr-2"></i>Crypto Treasury</h3>
+                            <p class="text-sm text-gray-500">Taxes are systematically converted to stable assets to prevent price impact on $STREAM when executing tips.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="relative flex flex-col md:flex-row justify-between items-center w-full group">
+                    <div class="absolute left-[-21px] md:left-1/2 w-4 h-4 rounded-full bg-brand border-4 border-black md:-translate-x-1/2 z-10 transition-transform group-hover:scale-150 group-hover:shadow-[0_0_15px_#ccff00]"></div>
+                    <div class="md:w-[45%] w-full pl-8 md:pl-0 md:text-right">
+                        <div class="p-6 rounded-xl border border-transparent hover:bg-surface hover:border-white/10 transition-all duration-300">
+                            <div class="text-brand font-mono text-xs mb-2">PHASE 03</div>
+                            <h3 class="font-display font-bold text-2xl uppercase text-white mb-2"><i class="fa-solid fa-satellite-dish text-brand/50 mr-2 md:hidden"></i>Global Distribution <i class="fa-solid fa-satellite-dish text-brand/50 ml-2 hidden md:inline"></i></h3>
+                            <p class="text-sm text-gray-500">Massive crypto donations (e.g., $10k, $50k) are dropped live on massive Twitch, Kick, and YouTube streams.</p>
+                        </div>
+                    </div>
+                    <div class="hidden md:block md:w-[45%]">
+                        <!-- Empty spacer for desktop -->
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="relative flex flex-col md:flex-row justify-between items-center w-full group">
+                    <div class="absolute left-[-21px] md:left-1/2 w-4 h-4 rounded-full bg-borderline border-4 border-black md:-translate-x-1/2 z-10 transition-transform group-hover:scale-150 group-hover:bg-brand group-hover:shadow-[0_0_15px_#ccff00]"></div>
+                    <div class="hidden md:block md:w-[45%]">
+                        <!-- Empty spacer for desktop -->
+                    </div>
+                    <div class="md:w-[45%] w-full pl-8 md:pl-0 md:text-left">
+                        <div class="p-6 rounded-xl border border-transparent hover:bg-surface hover:border-white/10 transition-all duration-300">
+                            <div class="text-gray-500 group-hover:text-brand transition-colors font-mono text-xs mb-2">PHASE 04</div>
+                            <h3 class="font-display font-bold text-2xl uppercase text-white mb-2"><i class="fa-solid fa-arrow-trend-up text-gray-600 group-hover:text-brand/50 transition-colors mr-2"></i>Attention Spike</h3>
+                            <p class="text-sm text-gray-500">Streamers react. Clips hit TikTok/X. Millions of eyeballs search for Stream Coin. Buying pressure increases. Return to Phase 01.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="bounty" class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-b border-borderline">
+        <div class="section-label">03 VOLUME FUNDS</div>
+        
+        <h2 class="font-display font-black text-4xl sm:text-5xl lg:text-6xl uppercase tracking-tighter mb-4">
+            <span class="text-outline-brand block">VOLUME FUNDS</span>
+            <span class="text-brand block">DISTRIBUTION.</span>
+        </h2>
+        
+        <p class="text-gray-400 text-lg mb-12 max-w-2xl">
+            Targeting the apex predators of the streaming world. The treasury accumulates until it hits the target threshold, then executes the donation live.
+        </p>
+
+        <!-- Abstract Data UI -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12">
+            <!-- Terminal UI -->
+            <div class="bg-surface border border-white/10 p-6 rounded-sm font-mono text-xs text-gray-500 h-64 overflow-hidden relative shadow-inner">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand/50 to-transparent"></div>
+                <div class="flex gap-2 mb-4">
+                    <div class="w-3 h-3 rounded-full bg-red-500/50"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-500/50"></div>
+                    <div class="w-3 h-3 rounded-full bg-brand/50"></div>
+                </div>
+                <div class="space-y-2 opacity-80">
+                    <p class="text-brand">> INIT_PROTOCOL_V2...</p>
+                    <p>> SCANNING_LIQUIDITY_POOL...</p>
+                    <p>> TAX_ACQUIRED: +2,450.00 USDC</p>
+                    <p>> TREASURY_BALANCE: UPDATING...</p>
+                    <p class="text-white">> TARGET_SEARCH_ACTIVE...</p>
+                    <p class="animate-pulse">> AWAITING_EXECUTION_THRESHOLD</p>
+                </div>
+            </div>
+
+            <!-- Radar / Target Lock UI -->
+            <div class="bg-surface border border-white/10 p-6 rounded-sm flex items-center justify-center h-64 relative overflow-hidden group">
+                <!-- Grid background -->
+                <div class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:20px_20px]"></div>
+                
+                <div class="relative w-32 h-32 flex items-center justify-center">
+                    <!-- Outer rotating ring -->
+                    <div class="absolute inset-0 border border-brand/30 rounded-full animate-spin-slow border-t-brand"></div>
+                    <!-- Inner pulsing ring -->
+                    <div class="absolute inset-4 border border-white/10 rounded-full animate-pulse"></div>
+                    <!-- Center Target -->
+                    <div class="relative text-brand text-3xl transition-transform group-hover:scale-110">
+                        <i class="fa-solid fa-crosshairs"></i>
+                    </div>
+                </div>
+                <div class="absolute bottom-6 text-center w-full font-mono text-xs tracking-widest text-brand uppercase">
+                    Status: Hunting
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-b border-borderline">
+        <div class="section-label">04 THE CULTURE</div>
+        
+        <h2 class="font-display font-black text-4xl sm:text-5xl lg:text-6xl uppercase tracking-tighter mb-12">
+            <span class="text-white block">REWARDING THE PEOPLE</span>
+            <span class="text-outline-white block">WHO DRIVE CULTURE.</span>
+        </h2>
+
+        <p class="text-gray-400 text-lg mb-16 max-w-2xl">
+            A transparent ledger of the attention we've acquired. Every massive donation creates a permanent cultural artifact on the timeline.
+        </p>
+
+    </section>
+
+    <section id="tokenomics" class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-b border-borderline">
+        <div class="section-label">05 THE DATA</div>
+        
+        <h2 class="font-display font-black text-4xl sm:text-5xl lg:text-6xl uppercase tracking-tighter mb-12">
+            <span class="text-white block">TRANSPARENT</span>
+            <span class="text-outline-brand block">BY DEFAULT.</span>
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+            <!-- Text/Data -->
+            <div>
+                <p class="text-gray-400 text-lg mb-8">
+                    Smart contract verified on the Robinhood Chain. Liquidity burned. Contract renounced. No team tokens, no VC allocations. Just pure mechanics.
+                </p>
+
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center border-b border-white/10 py-4">
+                        <span class="text-sm font-mono text-gray-500 uppercase">Network</span>
+                        <span class="font-bold text-white">Robinhood Chain</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-white/10 py-4">
+                        <span class="text-sm font-mono text-gray-500 uppercase">Buy Tax</span>
+                        <span class="font-bold text-brand">2%</span>
+                    </div>
+                    <div class="flex justify-between items-center py-4">
+                        <span class="text-sm font-mono text-gray-500 uppercase">Sell Tax</span>
+                        <span class="font-bold text-brand">2%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visualization -->
+            <div class="flex justify-center">
+                <div class="relative w-64 h-64 md:w-80 md:h-80">
+                    <!-- Progress Circle SVG -->
+                    <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="#111" stroke-width="8" />
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="#ccff00" stroke-width="8" stroke-dasharray="283" stroke-dashoffset="277.34" class="transition-all duration-1000" />
+                    </svg>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                        <span class="font-display font-black text-6xl text-white">2%</span>
+                        <span class="text-xs font-mono text-brand uppercase tracking-widest mt-2">Volume Tax</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solid Green Banner -->
+    <section class="bg-brand text-black py-20 px-4 sm:px-6 lg:px-8 border-b border-black">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+            <div>
+                <div class="text-xs font-mono uppercase tracking-widest mb-4 font-bold opacity-70">IT'S TIME</div>
+                <h2 class="font-display font-black text-5xl sm:text-6xl md:text-7xl uppercase tracking-tighter leading-none">
+                    VERIFY.<br>THEN TRADE.
+                </h2>
+                <p class="mt-4 font-medium max-w-md">Copy the contract address below to buy on Robinhood Chain DEXs. Secure your position in the attention economy.</p>
+            </div>
+            
+            <div class="w-full md:w-auto flex flex-col gap-4 min-w-[300px]">
+                <div class="bg-black/10 border border-black p-4 flex justify-between items-center font-mono text-sm">
+                    <span class="truncate pr-4 font-bold">0x1234...5678</span>
+                    <button onclick="copyCA()" class="hover:text-white transition-colors p-1" title="Copy CA">
+                        <i class="fa-regular fa-copy text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="py-24 px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto border-b border-borderline">
+        <div class="section-label">06 FAQ</div>
+        
+        <h2 class="font-display font-black text-4xl sm:text-5xl uppercase tracking-tighter mb-12">
+            KNOW THE <br><span class="text-brand">DETAILS.</span>
+        </h2>
+        
+        <p class="text-gray-400 mb-12">
+            Transparency is a prerequisite. Review the mechanics and understand exactly how the Stream Coin protocol functions before participating.
+        </p>
+
+        <div class="space-y-4">
+            <!-- FAQ 1 -->
+            <div class="faq-item border border-white/10 bg-surface">
+                <button class="w-full px-6 py-4 flex justify-between items-center text-left focus:outline-none" onclick="toggleFaq(this)">
+                    <span class="font-bold text-white uppercase text-sm tracking-wide">What exactly is the 2% tax used for?</span>
+                    <i class="fa-solid fa-plus text-gray-500 transition-transform duration-300 faq-icon"></i>
+                </button>
+                <div class="faq-answer px-6 pb-0 text-gray-400 text-sm">
+                    <div class="pb-4">
+                        The 2% tax collected on every buy and sell is automatically routed to the Streamer Treasury Wallet. It is accumulated and converted to stablecoins to fund massive live donations to major content creators.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 2 -->
+            <div class="faq-item border border-white/10 bg-surface">
+                <button class="w-full px-6 py-4 flex justify-between items-center text-left focus:outline-none" onclick="toggleFaq(this)">
+                    <span class="font-bold text-white uppercase text-sm tracking-wide">Why launch on Robinhood Chain?</span>
+                    <i class="fa-solid fa-plus text-gray-500 transition-transform duration-300 faq-icon"></i>
+                </button>
+                <div class="faq-answer px-6 pb-0 text-gray-400 text-sm">
+                    <div class="pb-4">
+                        Robinhood Chain provides the perfect environment of low fees, high speed, and a vast base of retail users ready to participate in the attention economy flywheel.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- FAQ 4 -->
+            <div class="faq-item border border-white/10 bg-surface">
+                <button class="w-full px-6 py-4 flex justify-between items-center text-left focus:outline-none" onclick="toggleFaq(this)">
+                    <span class="font-bold text-white uppercase text-sm tracking-wide">How are streamers chosen?</span>
+                    <i class="fa-solid fa-plus text-gray-500 transition-transform duration-300 faq-icon"></i>
+                </button>
+                <div class="faq-answer px-6 pb-0 text-gray-400 text-sm">
+                    <div class="pb-4">
+                        Targets are currently selected based on current viewership metrics and viral potential on platforms like Twitch, Kick, and YouTube. Future updates may include community voting.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="py-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
+        <div class="section-label justify-center mb-8">JOIN THE MOVEMENT</div>
+        <h2 class="font-display font-black text-5xl md:text-7xl uppercase tracking-tighter mb-6">
+            <span class="text-white block">OWN THE</span>
+            <span class="text-outline-brand block">FLYWHEEL.</span>
+        </h2>
+        <p class="text-gray-400 max-w-xl mx-auto mb-10">
+            The attention economy doesn't sleep. Every second you wait, another donation drops and another timeline is hijacked. Secure your bag.
+        </p>
+        <a href="#" class="inline-block bg-brand text-black font-display font-bold text-center px-12 py-5 uppercase tracking-widest hover:bg-white transition-colors">
+            Buy Stream
+        </a>
+        <div class="mt-8 text-xs font-mono text-gray-600 uppercase">
+            Contract: 0x1234...5678
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-borderline py-12 bg-dark">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
+                
+                <div class="flex items-center gap-2">
+                    <img src="image_2bee1e.jpg" alt="Stream Coin" class="w-7 h-7 rounded-full shadow-[0_0_8px_rgba(204,255,0,0.3)]">
+                    <span class="font-display font-bold text-lg tracking-tight text-white uppercase">STREAM COIN</span>
+                </div>
+
+                <div class="flex gap-4">
+                    <a href="https://x.com/StreamcoinRH" target="_blank" rel="noopener noreferrer" class="w-10 h-10 border border-white/10 flex items-center justify-center text-gray-400 hover:text-brand hover:border-brand transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 1200 1227">
+                            <path d="M714.163 519.284L1160.89 0H1055.03L667.137 450.887L357.328 0H0L468.492 681.821L0 1226.37H105.866L515.491 750.218L842.672 1226.37H1200L714.137 519.284H714.163ZM569.165 687.828L521.697 619.934L144.011 79.6944H306.615L611.412 515.685L658.88 583.579L1055.08 1150.3H892.476L569.165 687.854V687.828Z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="border-t border-white/5 pt-8 text-center md:text-left flex flex-col md:flex-row justify-between gap-4">
+                <p class="text-[10px] text-gray-600 font-mono uppercase tracking-widest">© 2026 Stream Coin Protocol.</p>
+                <p class="text-[10px] text-gray-600 max-w-lg md:text-right uppercase">
+                    Disclaimer: $STREAM is a memecoin with no intrinsic value. It is for entertainment. Crypto assets are volatile. Do your own research.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Custom Toast -->
+    <div id="toast">Contract Address Copied!</div>
+
+    <script>
+        // Mobile Menu Logic
+        const btn = document.getElementById('mobile-menu-btn');
+        // Simple alert replacement for menu (in a real app, this would toggle a div)
+        btn.addEventListener('click', () => {
+            console.log("Mobile menu toggled");
+            // Add mobile menu implementation if needed, keeping it simple as per prompt
+        });
+
+        // FAQ Accordion Logic
+        function toggleFaq(button) {
+            const item = button.parentElement;
+            
+            // Close all others
+            document.querySelectorAll('.faq-item').forEach(faq => {
+                if(faq !== item) {
+                    faq.classList.remove('active');
+                }
+            });
+            
+            // Toggle current
+            item.classList.toggle('active');
+        }
+
+        // Copy Contract Address Logic
+        function copyCA() {
+            const caText = document.getElementById('full-ca').value;
+            
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(caText).then(() => {
+                    showToast();
+                }).catch(err => {
+                    fallbackCopyTextToClipboard(caText);
+                });
+            } else {
+                fallbackCopyTextToClipboard(caText);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast();
+            } catch (err) {
+                console.error('Fallback: Oops, unable to copy', err);
+            }
+            document.body.removeChild(textArea);
+        }
+
+        function showToast() {
+            const toast = document.getElementById("toast");
+            toast.className = "show";
+            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
+        }
+    </script>
+</body>
+</html>
